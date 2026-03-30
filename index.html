@@ -277,10 +277,12 @@ function checkCache() {
 
 function saveKey() {
   const v = document.getElementById('apiInput').value.trim();
-  if (!v.startsWith('sk-ant')) { alert('Invalid key — must start with sk-ant'); return; }
+  if (!v.startsWith('sk-ant')) { alert('Invalid key format — must start with sk-ant'); return; }
   apiKey = v;
   localStorage.setItem('fi_key', v);
-  document.getElementById('apiBox').style.display = 'none';
+  const box = document.getElementById('apiBox');
+  box.style.borderColor = 'var(--accent)';
+  box.innerHTML = '<p style="color:var(--accent);font-size:14px;font-weight:700;">✅ API Key saved successfully. You are ready to upload files.</p>';
 }
 
 function renderQGrid() {
@@ -309,13 +311,28 @@ function setupDrop() {
 
 function handleFiles(f) {
   files = f.filter(x => x.name.endsWith('.json'));
-  if (!files.length) { showErr('No JSON files found.'); return; }
+  if (!files.length) { 
+    alert('No JSON files found. Make sure you are selecting .json files.');
+    return; 
+  }
   const chats = files.filter(x => x.name.startsWith('fiverr_chat_')).length;
   const orders = files.filter(x => x.name.startsWith('fiverr_order_')).length;
-  document.getElementById('fileSummary').style.display = 'block';
-  document.getElementById('fileSummary').textContent = `✓ ${files.length} files — ${chats} chats, ${orders} orders`;
-  document.getElementById('qSection').style.display = 'block';
-  document.getElementById('runBtn').style.display = 'inline-block';
+  
+  // Big obvious confirmation
+  const dz = document.getElementById('dropzone');
+  dz.style.borderColor = 'var(--accent)';
+  dz.style.background = 'rgba(0,255,136,0.08)';
+  dz.innerHTML = '<div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:var(--accent);margin-bottom:8px;">✅ ' + files.length + ' FILES LOADED</div><div style="font-family:DM Mono,monospace;font-size:13px;color:#888;">' + chats + ' chat files + ' + orders + ' order files</div>';
+  
+  const fs = document.getElementById('fileSummary');
+  if (fs) { fs.style.display = 'block'; fs.textContent = '✓ ' + files.length + ' files — ' + chats + ' chats, ' + orders + ' orders'; }
+  
+  const qs = document.getElementById('qSection');
+  if (qs) qs.style.display = 'block';
+  
+  const rb = document.getElementById('runBtn');
+  if (rb) rb.style.display = 'inline-block';
+  
   hideErr();
 }
 
