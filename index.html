@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiverr Intel v2 — FatGraphs</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+  :root {
+    --bg:#0a0a0a;--surface:#111;--surface2:#181818;--border:#242424;
+    --accent:#00ff88;--accent2:#ff6b35;--accent3:#a855f7;--accent4:#38bdf8;
+    --text:#f0f0f0;--dim:#555;--mid:#888;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+  /* HEADER */
+  .hdr{padding:24px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:100;}
+  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:-0.5px;}
+  .logo span{color:var(--accent);}
+  .hdr-right{display:flex;gap:10px;align-items:center;}
+  .hdr-btn{font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--mid);transition:all .15s;}
+  .hdr-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .hdr-btn.primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:500;}
+  .hdr-btn.primary:hover{background:#00e07a;}
+  .hdr-btn.danger{border-color:rgba(255,107,53,.4);color:var(--accent2);}
+  .hdr-btn.danger:hover{border-color:var(--accent2);}
+
+  /* SECTIONS */
+  .section{display:none;padding:48px 40px;max-width:960px;margin:0 auto;}
+  .section.active{display:block;}
+
+  /* UPLOAD */
+  .upload-hero{margin-bottom:40px;}
+  .upload-hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:44px;letter-spacing:-2px;line-height:1.05;margin-bottom:12px;}
+  .upload-hero h1 em{color:var(--accent);font-style:normal;}
+  .upload-hero p{color:var(--mid);font-size:15px;line-height:1.7;max-width:520px;}
+
+  .api-box{background:var(--surface);border:1px solid rgba(168,85,247,.25);border-radius:12px;padding:20px 24px;margin-bottom:28px;}
+  .api-box p{font-size:13px;color:var(--mid);margin-bottom:12px;line-height:1.6;}
+  .api-box strong{color:var(--accent3);}
+  .api-row{display:flex;gap:10px;}
+  .api-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:12px;color:var(--text);outline:none;transition:border-color .15s;}
+  .api-input:focus{border-color:var(--accent3);}
+  .api-save{background:var(--accent3);color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;}
+
+  .dropzone{border:1.5px dashed var(--border);border-radius:14px;padding:56px 40px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface);}
+  .dropzone:hover,.dropzone.over{border-color:var(--accent);background:rgba(0,255,136,.03);}
+  .drop-icon{font-size:36px;margin-bottom:14px;}
+  .drop-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;}
+  .drop-sub{color:var(--dim);font-family:'DM Mono',monospace;font-size:12px;}
+  #fi{display:none;}
+
+  .file-summary{margin-top:20px;font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);display:none;}
+
+  .q-section{margin-top:32px;display:none;}
+  .q-section h3{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;}
+  .q-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .qc{padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--mid);cursor:pointer;transition:all .15s;background:var(--surface);text-align:left;}
+  .qc:hover{border-color:var(--accent4);color:var(--text);}
+  .qc.on{border-color:var(--accent);color:var(--accent);background:rgba(0,255,136,.04);}
+  .q-actions{margin-top:10px;display:flex;gap:8px;}
+  .q-action-btn{font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);background:transparent;border:none;cursor:pointer;padding:4px 0;}
+  .q-action-btn:hover{color:var(--accent);}
+
+  .run-btn{margin-top:28px;background:var(--accent);color:#000;border:none;padding:15px 36px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;border-radius:8px;cursor:pointer;display:none;transition:all .2s;}
+  .run-btn:hover{background:#00e07a;transform:translateY(-1px);}
+  .run-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+  /* PROGRESS */
+  .prog-label{font-family:'DM Mono',monospace;font-size:12px;color:var(--mid);margin-bottom:10px;}
+  .prog-wrap{background:var(--surface);border-radius:3px;height:2px;margin-bottom:20px;}
+  .prog-bar{height:100%;background:var(--accent);width:0;transition:width .4s;}
+  .prog-log{font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:14px;background:var(--surface);}
+  .prog-log p{margin-bottom:3px;}
+  .lg{color:var(--accent);}
+  .lo{color:var(--accent2);}
+  .lb{color:var(--accent4);}
+
+  /* RESULTS */
+  .res-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;}
+  .res-title{font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1.5px;line-height:1.1;}
+  .res-title em{color:var(--accent);font-style:normal;}
+  .res-actions{display:flex;gap:8px;flex-wrap:wrap;}
+
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:36px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;}
+  .stat-v{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;color:var(--accent);}
+  .stat-l{font-size:11px;color:var(--dim);margin-top:3px;font-family:'DM Mono',monospace;}
+
+  /* TABS */
+  .tab-bar{display:flex;gap:6px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface2);border-radius:12px 12px 0 0;}
+  .tab{font-family:'DM Mono',monospace;font-size:10px;padding:5px 11px;border-radius:20px;border:1px solid var(--border);cursor:pointer;color:var(--dim);transition:all .15s;background:transparent;position:relative;}
+  .tab:hover{border-color:var(--accent4);color:var(--accent4);}
+  .tab.active{border-color:var(--accent);color:var(--accent);background:rgba(0,255,136,.05);}
+  .tab.done::after{content:'✓';position:absolute;top:-4px;right:-4px;font-size:8px;background:var(--accent);color:#000;border-radius:50%;width:12px;height:12px;display:flex;align-items:center;justify-content:center;}
+  .tab.running::after{content:'';position:absolute;top:-4px;right:-4px;width:8px;height:8px;border:1.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+  .panel-body{padding:28px;max-height:520px;overflow-y:auto;}
+  .ai-text{font-size:13px;line-height:1.9;color:var(--mid);white-space:pre-wrap;}
+  .ai-text b,.ai-text strong{color:var(--text);}
+
+  .cursor{display:inline-block;width:7px;height:13px;background:var(--accent);animation:blink 1s infinite;vertical-align:middle;margin-left:2px;}
+  @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .waiting{font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);}
+  .spin-inline{display:inline-block;width:12px;height:12px;border:1.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle;}
+
+  .err{color:var(--accent2);font-family:'DM Mono',monospace;font-size:12px;padding:12px;border:1px solid rgba(255,107,53,.25);border-radius:8px;background:rgba(255,107,53,.05);margin-top:12px;display:none;}
+
+  /* CACHE NOTICE */
+  .cache-notice{background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.2);border-radius:10px;padding:16px 20px;margin-bottom:28px;font-size:13px;color:var(--mid);display:none;}
+  .cache-notice strong{color:var(--accent4);}
+
+  ::-webkit-scrollbar{width:3px;}
+  ::-webkit-scrollbar-track{background:var(--surface);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+  /* EXPORT MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:480px;width:100%;}
+  .modal h3{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:8px;}
+  .modal p{color:var(--mid);font-size:13px;margin-bottom:24px;line-height:1.6;}
+  .modal-btns{display:flex;gap:10px;flex-wrap:wrap;}
+  .modal-btn{flex:1;padding:12px 16px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text);transition:all .15s;}
+  .modal-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .modal-btn.cancel{color:var(--mid);}
+  .modal-btn.cancel:hover{border-color:var(--accent2);color:var(--accent2);}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">Fiverr<span>Intel</span> <span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--dim);font-weight:400;">v2</span></div>
+  <div class="hdr-right" id="hdrRight">
+    <div class="hdr-btn" id="hdrExport" onclick="showExportModal()" style="display:none;">⬇ Export Report</div>
+    <div class="hdr-btn danger" id="hdrReset" onclick="resetAll()" style="display:none;">↺ Reset</div>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div class="section active" id="secUpload">
+  <div class="upload-hero">
+    <h1>Fiverr Buyer<br><em>Intelligence.</em></h1>
+    <p>Drop all your JSON files. The tool matches chats to orders, identifies converted buyers, then runs AI analysis against your full GTM question framework.</p>
+  </div>
+
+  <div class="cache-notice" id="cacheNotice">
+    <strong>Previous analysis found.</strong> Results from your last session are saved below. You can export them or start a new analysis.
+  </div>
+
+  <div class="api-box" id="apiBox">
+    <p>Enter your <strong>Anthropic API key</strong> to run AI analysis. Your key is stored only in your browser and sent directly to Anthropic — never to any server.</p>
+    <div class="api-row">
+      <input class="api-input" id="apiInput" type="password" placeholder="sk-ant-api03-...">
+      <button class="api-save" onclick="saveKey()">Save Key</button>
+    </div>
+  </div>
+
+  <div class="dropzone" id="dz" onclick="document.getElementById('fi').click()">
+    <div class="drop-icon">⬡</div>
+    <div class="drop-title">Drop all JSON files here</div>
+    <div class="drop-sub">fiverr_chat_*.json + fiverr_order_*.json — select all at once</div>
+    <input type="file" id="fi" multiple accept=".json">
+  </div>
+  <div class="file-summary" id="fileSummary"></div>
+  <div class="err" id="errMsg"></div>
+
+  <div class="q-section" id="qSection">
+    <h3>Select questions to analyze</h3>
+    <div class="q-grid" id="qGrid"></div>
+    <div class="q-actions">
+      <button class="q-action-btn" onclick="selectAll()">Select all</button>
+      <button class="q-action-btn" onclick="selectNone()">Deselect all</button>
+    </div>
+  </div>
+
+  <button class="run-btn" id="runBtn" onclick="startAnalysis()">Run Intelligence Analysis →</button>
+</div>
+
+<!-- PROGRESS -->
+<div class="section" id="secProg">
+  <div class="prog-label" id="progLabel">Initializing...</div>
+  <div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div>
+  <div class="prog-log" id="progLog"></div>
+</div>
+
+<!-- RESULTS -->
+<div class="section" id="secRes">
+  <div class="res-hdr">
+    <div class="res-title">Buyer<br><em>Intelligence</em><br>Report</div>
+    <div class="res-actions">
+      <button class="hdr-btn primary" onclick="showExportModal()">⬇ Export Report</button>
+      <button class="hdr-btn danger" onclick="resetAll()">↺ New Analysis</button>
+    </div>
+  </div>
+  <div class="stats-row" id="statsRow"></div>
+  <div class="panel" id="mainPanel">
+    <div class="tab-bar" id="tabBar"></div>
+    <div class="panel-body" id="panelBody"></div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <h3>Export Report</h3>
+    <p>Choose your export format. The report includes all analyzed questions and stats from this session.</p>
+    <div class="modal-btns">
+      <button class="modal-btn" onclick="exportTXT()">📄 Full Text Report</button>
+      <button class="modal-btn" onclick="exportCSV()">📊 CSV (one row per question)</button>
+      <button class="modal-btn" onclick="exportJSON()">{ } Raw JSON</button>
+      <button class="modal-btn cancel" onclick="hideExportModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── QUESTIONS ─────────────────────────────────────────
+const QS = [
+  {id:'who', label:'👤 Who is my buyer?', prompt:'Analyze all buyer profiles and conversations to answer: Who exactly is Haroon's Fiverr buyer? Go deep: job title, company type, size, industry, geography, technical background, business stage, team size, revenue stage. What does their typical day look like? Why are they the one searching for this and not someone else at their company? Use specific buyer names and quotes. Build a complete psychographic and demographic profile.'},
+  {id:'why', label:'🤔 Why Fiverr — why not DIY or agency?', prompt:'Based on actual conversations, why do these buyers come to Fiverr specifically? What skill, time, or knowledge gap stops them from doing it themselves? Why not in-house or a local agency? What is the specific moment or realization that brings them here? Quote actual buyers explaining their situation. What does Fiverr represent to them psychologically?'},
+  {id:'triggers', label:'⚡ Buying triggers & pain', prompt:'What exact problems and situations lead these buyers to reach out? What happened in their business right before they messaged? What pain are they feeling? What have they already tried that failed? What are they afraid of? What would happen if they did nothing? Use direct quotes. Separate triggers of people who paid vs just inquired.'},
+  {id:'psyche', label:'🧠 Quick buyers vs window shoppers', prompt:'Profile the distinct psyche types in these conversations. What is the mental state of a quick buyer? What makes slow buyers hesitate? What do window shoppers actually want? What specific words, phrases, or behaviors in the FIRST 3 messages identify each type? Give a cheat sheet Haroon can use to categorize any new inquiry in under 60 seconds.'},
+  {id:'qualify', label:'❓ Qualify and discard fast', prompt:'Based on conversations that converted vs wasted time — what exact questions should Haroon ask in the first 2-3 replies to qualify serious buyers and discard window shoppers? Give exact question wording. For each: what a good answer sounds like, what a bad answer sounds like, what it tells you about the buyer. How many questions does it take to know if someone is worth investing time in?'},
+  {id:'goals', label:'🎯 Buyer goals & awareness level', prompt:'What are the actual goals these buyers want to achieve — not what they say, what do they actually want? How well do they understand what they are asking for? What do they know about marketing vs what they do not know? What assumptions do they come in with that are wrong? What are their success metrics? Use buyer quotes throughout.'},
+  {id:'expectations', label:'📋 Expectations & surprises', prompt:'What do buyers expect when they hire Haroon — deliverables, timelines, communication style, level of involvement, results? Where are their expectations wrong or unrealistic? What surprises them positively and negatively? What do they not know they need until they are told? How do converted buyers' expectations differ from non-converted ones?'},
+  {id:'touchpoints', label:'🔢 Touchpoints, tone & response patterns', prompt:'How many messages does it take to close a deal? Map the arc of a converted conversation — what happens in messages 1-5, 6-15, 16+? What tone and writing style gets buyers to reply and keep engaging? What specific phrases or message structures from Haroon kept conversations alive vs killed them? What response time and communication pattern works best?'},
+  {id:'gig_video', label:'🎬 Gig video script & talking points', prompt:'Write a complete gig video script outline for Haroon based on what buyers actually say and worry about. Include: the hook (first 5 seconds using buyer language), pain points to name, specific proof points that matter to THIS audience, objections to handle, and the CTA. What would make someone who just landed on the gig immediately feel understood?'},
+  {id:'growth', label:'📈 Gig lineup & product growth', prompt:'Based on what buyers ask for and what problems repeat — what new gigs should Haroon create? What is underserved in his current offering? What do buyers want that he does not currently sell? What packaging or bundling would convert more? What should his full gig lineup look like — entry level, mid tier, premium — to maximize revenue?'},
+  {id:'pricing', label:'💰 Pricing: plans vs execution services', prompt:'Based on actual order values, budget discussions in conversations, and what buyers said they could spend — what should Haroon charge for: (1) strategy/plan-only services, (2) execution services like paid ads management, cold email setup, LinkedIn outbound, (3) retainer work? What price points make buyers hesitate vs feel comfortable? What is the pricing psychology of this buyer? Give specific recommended price points with reasoning from the data.'},
+  {id:'channels', label:'📡 Where to find & target them', prompt:'Based on buyer profiles and what they shared about themselves — where do these buyers spend time online? What channels can Haroon use to find and reach them proactively? What are their browsing and searching patterns before they come to Fiverr? If Haroon wanted to find 10 of these buyers this week, exactly where would he look and what would he do?'},
+  {id:'content', label:'✍️ Blog, SEO & content strategy', prompt:'Based on the exact language, questions, and problems buyers bring to conversations — what should Haroon's content strategy look like? What are they Googling before they find him? Give 15+ specific blog post titles with target keywords matching their actual search intent. What topics would make a buyer think this person gets exactly what I am going through? What content would bring inbound leads who are pre-sold?'},
+  {id:'reels', label:'📱 Reels & social content topics', prompt:'Create 20+ specific Reel or short video content ideas targeting these exact buyers. For each: the exact hook line for the first 3 seconds, the content angle, and specific words or phrases from actual buyer conversations that would stop the scroll. What emotional triggers work for this audience? What should Haroon never say in a reel targeting these buyers?'},
+  {id:'outreach', label:'📧 Cold email & LinkedIn outreach', prompt:'Based on the firmographics of buyers in this dataset — give the exact LinkedIn Sales Navigator filters: job titles, company size, industry, keywords, geography, seniority, recent activity signals. Then write a 3-email cold outreach sequence targeting the converted buyer profile. Use actual language patterns and pain points from the conversations. What subject lines would get this audience to open? What opening line would make them feel immediately understood?'},
+];
+
+// ── STATE ─────────────────────────────────────────────
+let apiKey = localStorage.getItem('fi_key') || '';
+let files = [];
+let chatData = [], orderData = [];
+let results = JSON.parse(localStorage.getItem('fi_results') || '{}');
+let stats = JSON.parse(localStorage.getItem('fi_stats') || '{}');
+let activeTab = null;
+
+// ── INIT ──────────────────────────────────────────────
+window.onload = () => {
+  if (apiKey) {
+    document.getElementById('apiBox').style.display = 'none';
+  } else {
+    document.getElementById('apiInput').value = '';
+  }
+  renderQGrid();
+  setupDrop();
+  checkCache();
+};
+
+function checkCache() {
+  if (Object.keys(results).length > 0) {
+    document.getElementById('cacheNotice').style.display = 'block';
+    document.getElementById('hdrExport').style.display = 'block';
+    document.getElementById('hdrReset').style.display = 'block';
+    // Offer to view cached results
+    const btn = document.createElement('button');
+    btn.className = 'run-btn';
+    btn.style.display = 'inline-block';
+    btn.style.background = 'var(--accent4)';
+    btn.style.marginLeft = '12px';
+    btn.textContent = 'View Saved Results →';
+    btn.onclick = showCachedResults;
+    document.getElementById('runBtn').insertAdjacentElement('afterend', btn);
+  }
+}
+
+function saveKey() {
+  const v = document.getElementById('apiInput').value.trim();
+  if (!v.startsWith('sk-ant')) { alert('Invalid key — must start with sk-ant'); return; }
+  apiKey = v;
+  localStorage.setItem('fi_key', v);
+  document.getElementById('apiBox').style.display = 'none';
+}
+
+function renderQGrid() {
+  const g = document.getElementById('qGrid');
+  QS.forEach(q => {
+    const c = document.createElement('div');
+    c.className = 'qc on';
+    c.textContent = q.label;
+    c.dataset.id = q.id;
+    c.onclick = () => c.classList.toggle('on');
+    g.appendChild(c);
+  });
+}
+
+function selectAll() { document.querySelectorAll('.qc').forEach(c => c.classList.add('on')); }
+function selectNone() { document.querySelectorAll('.qc').forEach(c => c.classList.remove('on')); }
+
+function setupDrop() {
+  const dz = document.getElementById('dz');
+  const fi = document.getElementById('fi');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); handleFiles(Array.from(e.dataTransfer.files)); });
+  fi.addEventListener('change', () => handleFiles(Array.from(fi.files)));
+}
+
+function handleFiles(f) {
+  files = f.filter(x => x.name.endsWith('.json'));
+  if (!files.length) { showErr('No JSON files found.'); return; }
+  const chats = files.filter(x => x.name.startsWith('fiverr_chat_')).length;
+  const orders = files.filter(x => x.name.startsWith('fiverr_order_')).length;
+  document.getElementById('fileSummary').style.display = 'block';
+  document.getElementById('fileSummary').textContent = `✓ ${files.length} files — ${chats} chats, ${orders} orders`;
+  document.getElementById('qSection').style.display = 'block';
+  document.getElementById('runBtn').style.display = 'inline-block';
+  hideErr();
+}
+
+function showErr(m) { const e = document.getElementById('errMsg'); e.textContent = m; e.style.display = 'block'; }
+function hideErr() { document.getElementById('errMsg').style.display = 'none'; }
+
+// ── PARSE ─────────────────────────────────────────────
+function readFile(f) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsText(f);
+  });
+}
+
+async function parseFiles() {
+  chatData = []; orderData = [];
+  for (const f of files) {
+    try {
+      const txt = await readFile(f);
+      const json = JSON.parse(txt);
+      if (f.name.startsWith('fiverr_chat_')) {
+        // Extract username from filename — handle spaces and special chars
+        const raw = f.name.replace('fiverr_chat_', '').replace('.json', '').trim();
+        chatData.push({ username: raw, usernameLower: raw.toLowerCase(), filename: f.name, ...json });
+      } else if (f.name.startsWith('fiverr_order_')) {
+        // Extract buyer username from filename: fiverr_order_USERNAME_ORDERID.json
+        const raw = f.name.replace('fiverr_order_', '').replace('.json', '');
+        // Order ID is the last segment after last underscore that matches FO pattern
+        const parts = raw.split('_');
+        // Find where the order ID starts (starts with FO)
+        let orderIdIdx = parts.findIndex(p => p.startsWith('FO'));
+        let buyerParts = orderIdIdx > -1 ? parts.slice(0, orderIdIdx) : parts.slice(0, -1);
+        const buyerUsername = buyerParts.join('_').toLowerCase();
+        orderData.push({ buyerUsername, filename: f.name, ...json });
+      }
+    } catch(e) {
+      log(`<span class="lo">✗ Parse failed: ${f.name}</span>`);
+    }
+  }
+}
+
+// ── MATCH ─────────────────────────────────────────────
+function matchData() {
+  // Build order lookup by buyer username
+  const orderMap = {};
+  orderData.forEach(o => {
+    // Also try matching from order_meta.buyer_username
+    const metaUser = o.order_meta?.buyer_username?.toLowerCase() || o.meta?.buyer_username?.toLowerCase() || '';
+    const key = metaUser || o.buyerUsername;
+    if (key) orderMap[key] = o;
+  });
+
+  log(`<span class="lb">→ Order index built: ${Object.keys(orderMap).length} unique buyers</span>`);
+
+  return chatData.map(chat => {
+    // Try multiple matching strategies
+    const uLower = chat.usernameLower;
+    let order = orderMap[uLower];
+
+    // Fuzzy: try partial match if exact fails
+    if (!order) {
+      const keys = Object.keys(orderMap);
+      const fuzzy = keys.find(k => k.includes(uLower) || uLower.includes(k));
+      if (fuzzy) order = orderMap[fuzzy];
+    }
+
+    const msgs = chat.messages || [];
+    const myMsgs = msgs.filter(m => m.sender === 'Me');
+    const buyerMsgs = msgs.filter(m => m.sender !== 'Me');
+    const buyer = chat.buyer || {};
+
+    return {
+      username: chat.username,
+      country: buyer['From'] || buyer['from'] || 'Unknown',
+      fiverr_since: buyer['On Fiverr since'] || 'Unknown',
+      english: buyer['English'] || 'Unknown',
+      completed_orders: buyer['Completed orders'] || '0',
+      avg_order_price: buyer['Average order price*'] || buyer['Average order price'] || 'Unknown',
+      repeat_rate: buyer['Repeat order rate'] || 'Unknown',
+      preferred_service: buyer['Preferred service'] || 'Unknown',
+      total_msgs: msgs.length,
+      my_msgs: myMsgs.length,
+      buyer_msgs: buyerMsgs.length,
+      last_sender: msgs.length ? msgs[msgs.length-1].sender : 'N/A',
+      converted: !!order,
+      order_value: order?.order_meta?.total_price || order?.meta?.total_price || 'N/A',
+      gig_title: order?.order_meta?.gig_title || order?.meta?.gig_title || 'N/A',
+      requirements: order?.requirements ? order.requirements.map(r => `Q: ${r.question}\nA: ${r.answer}`).join('\n') : '',
+      first_buyer_msg: (buyerMsgs[0]?.text || '').slice(0, 600),
+      first_my_reply: (myMsgs[0]?.text || '').slice(0, 600),
+      conversation: msgs.slice(0, 40).map(m => `[${m.sender}]: ${m.text?.slice(0,300)}`).join('\n'),
+    };
+  });
+}
+
+// ── STATS ─────────────────────────────────────────────
+function computeStats(master) {
+  const conv = master.filter(d => d.converted);
+  const notConv = master.filter(d => !d.converted);
+
+  const avgConv = conv.length ? Math.round(conv.reduce((s,d) => s+d.total_msgs,0)/conv.length) : 0;
+  const avgNotConv = notConv.length ? Math.round(notConv.reduce((s,d) => s+d.total_msgs,0)/notConv.length) : 0;
+
+  const countries = {};
+  master.forEach(d => { if(d.country && d.country!=='Unknown') countries[d.country]=(countries[d.country]||0)+1; });
+  const topCountries = Object.entries(countries).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([c,n])=>`${c}(${n})`).join(', ');
+
+  const orderVals = orderData.map(o => {
+    const raw = (o.order_meta?.total_price || o.meta?.total_price || '').replace(/[^0-9.]/g,'');
+    return raw ? parseFloat(raw) : 0;
+  }).filter(v => v>0);
+  const avgOrderVal = orderVals.length ? Math.round(orderVals.reduce((a,b)=>a+b,0)/orderVals.length) : 0;
+  const totalRevenue = orderVals.reduce((a,b)=>a+b,0);
+
+  return {
+    total: master.length,
+    converted: conv.length,
+    notConverted: notConv.length,
+    convRate: master.length ? Math.round(conv.length/master.length*100) : 0,
+    avgMsgsConv: avgConv,
+    avgMsgsNotConv: avgNotConv,
+    topCountries,
+    avgOrderVal,
+    totalRevenue,
+    orders: orderData.length,
+  };
+}
+
+// ── CONTEXT ───────────────────────────────────────────
+function buildContext(master, s) {
+  const conv = master.filter(d => d.converted);
+  const notConv = master.filter(d => !d.converted).slice(0, 30);
+
+  let ctx = `FIVERR SELLER INTELLIGENCE DATA — HAROON KHAN (FatGraphs / haroonkhan164)
+Role: B2B SaaS GTM Strategist, Paid Ads, Cold Email, LinkedIn Outbound, Demand Generation
+Platform: Fiverr Vetted Pro
+Analysis Period: Last 10 months
+
+=== DATASET OVERVIEW ===
+Total conversations: ${s.total}
+Converted to paid orders: ${s.converted} (${s.convRate}% conversion rate)
+Non-converted: ${s.notConverted}
+Average messages in CONVERTED chats: ${s.avgMsgsConv}
+Average messages in NON-CONVERTED chats: ${s.avgMsgsNotConv}
+Average order value: $${s.avgOrderVal}
+Estimated total revenue from dataset: $${s.totalRevenue}
+Top buyer countries: ${s.topCountries}
+
+=== CONVERTED BUYERS (PAID ORDERS) ===
+`;
+
+  conv.forEach((d, i) => {
+    ctx += `\n--- CONVERTED #${i+1}: ${d.username} ---
+Country: ${d.country} | Fiverr since: ${d.fiverr_since} | Past orders: ${d.completed_orders} | Avg spend: ${d.avg_order_price} | English: ${d.english}
+Gig ordered: ${d.gig_title} | Order value: ${d.order_value}
+Messages: ${d.total_msgs} total (Me: ${d.my_msgs}, Buyer: ${d.buyer_msgs}) | Last sender: ${d.last_sender}
+BUYER FIRST MESSAGE: ${d.first_buyer_msg}
+HAROON'S FIRST REPLY: ${d.first_my_reply}
+${d.requirements ? `\nORDER REQUIREMENTS:\n${d.requirements}` : ''}
+CONVERSATION EXCERPT:\n${d.conversation}\n`;
+  });
+
+  ctx += `\n=== NON-CONVERTED CONVERSATIONS (DID NOT BUY) ===\n`;
+
+  notConv.forEach((d, i) => {
+    ctx += `\n--- NON-CONVERTED #${i+1}: ${d.username} ---
+Country: ${d.country} | Fiverr since: ${d.fiverr_since} | Past orders: ${d.completed_orders} | Avg spend: ${d.avg_order_price} | English: ${d.english}
+Messages: ${d.total_msgs} | Last sender: ${d.last_sender}
+BUYER FIRST MESSAGE: ${d.first_buyer_msg}
+HAROON'S FIRST REPLY: ${d.first_my_reply}
+CONVERSATION EXCERPT:\n${d.conversation}\n`;
+  });
+
+  return ctx;
+}
+
+// ── ANALYSIS ──────────────────────────────────────────
+async function startAnalysis() {
+  if (!apiKey) { showErr('Enter your API key first.'); return; }
+  const selectedQs = QS.filter(q => document.querySelector(`.qc[data-id="${q.id}"]`)?.classList.contains('on'));
+  if (!selectedQs.length) { showErr('Select at least one question.'); return; }
+
+  // Clear old results
+  results = {}; stats = {};
+  localStorage.removeItem('fi_results');
+  localStorage.removeItem('fi_stats');
+
+  show('secProg');
+  hide('secUpload');
+
+  log('Parsing files...');
+  await parseFiles();
+  log(`<span class="lg">✓ ${chatData.length} chats, ${orderData.length} orders parsed</span>`);
+
+  log('Matching orders to chats...');
+  const master = matchData();
+  const conv = master.filter(d => d.converted);
+  log(`<span class="lg">✓ ${conv.length} converted buyers identified</span>`);
+  if (conv.length === 0) {
+    log(`<span class="lo">⚠ No matches found. Check that order filenames contain buyer usernames.</span>`);
+  }
+
+  prog(25);
+  log('Computing stats...');
+  stats = computeStats(master);
+  localStorage.setItem('fi_stats', JSON.stringify(stats));
+
+  log('Building AI context...');
+  const context = buildContext(master, stats);
+  prog(35);
+
+  // Show results shell
+  hide('secProg');
+  show('secRes');
+  document.getElementById('hdrExport').style.display = 'block';
+  document.getElementById('hdrReset').style.display = 'block';
+  renderStats();
+  renderTabs(selectedQs);
+
+  // Run AI per question — sequential with delay to avoid rate limits
+  for (let i = 0; i < selectedQs.length; i++) {
+    const q = selectedQs[i];
+    prog(35 + Math.round((i/selectedQs.length)*65));
+    setTabState(q.id, 'running');
+    log(`<span class="lb">→ Running question ${i+1}/${selectedQs.length}: ${q.label}</span>`);
+    await runAI(q, context);
+    setTabState(q.id, 'done');
+    // Save after each question so nothing is lost
+    localStorage.setItem('fi_results', JSON.stringify(results));
+    // Wait 30 seconds between questions to stay within rate limits
+    if (i < selectedQs.length - 1) {
+      log(`<span style="color:var(--dim)">Waiting 30s before next question...</span>`);
+      await new Promise(r => setTimeout(r, 30000));
+    }
+  }
+
+  log('Analysis complete.');
+  localStorage.setItem('fi_results', JSON.stringify(results));
+}
+
+async function runAI(q, context) {
+  const el = document.getElementById(`content-${q.id}`);
+  if (!el) return;
+
+  el.innerHTML = '<span class="spin-inline"></span><span class="waiting">Analyzing...</span>';
+
+  const prompt = `You are a world-class GTM strategist and buyer intelligence analyst. You are analyzing real Fiverr conversation data for Haroon Khan — a B2B SaaS growth consultant (FatGraphs) who sells GTM strategy, paid ads, cold email, LinkedIn outbound, and demand generation on Fiverr as a Vetted Pro seller.
+
+${context}
+
+IMPORTANT CONTEXT:
+- The converted buyers (those who paid) are your gold standard for analysis
+- Haroon's services: GTM strategy, paid ads (Meta/Google/LinkedIn), cold email, LinkedIn outbound, demand generation, SEO, web dev, automations, UI/UX
+- Haroon does NOT do: TikTok organic, Reddit, Discord, community management, influencer campaigns
+- His typical client: early to mid-stage B2B SaaS founders
+- Base in Islamabad, Pakistan — serves US/UK/EU clients
+
+=== YOUR TASK ===
+${q.prompt}
+
+Instructions:
+- Ground every insight in the actual data. Reference specific buyers, quotes, or patterns you see.
+- Separate insights about CONVERTED buyers from non-converted where relevant.
+- Be direct, specific, and actionable. No generic marketing advice.
+- Format clearly with headers and short paragraphs.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 3000,
+        stream: true,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      el.innerHTML = `<span style="color:var(--accent2)">API Error: ${err.error?.message || resp.status}</span>`;
+      return;
+    }
+
+    el.innerHTML = `<div class="ai-text" id="stream-${q.id}"></div><span class="cursor"></span>`;
+    const streamEl = document.getElementById(`stream-${q.id}`);
+    let fullText = '';
+
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') break;
+          try {
+            const p = JSON.parse(data);
+            if (p.type === 'content_block_delta' && p.delta?.text) {
+              fullText += p.delta.text;
+              streamEl.textContent = fullText;
+              streamEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          } catch(e) {}
+        }
+      }
+    }
+
+    // Store result
+    results[q.id] = fullText;
+    localStorage.setItem('fi_results', JSON.stringify(results));
+
+    // Remove cursor
+    el.querySelector('.cursor')?.remove();
+
+  } catch(e) {
+    el.innerHTML = `<span style="color:var(--accent2)">Error: ${e.message}</span>`;
+  }
+}
+
+// ── RENDER ────────────────────────────────────────────
+function renderStats() {
+  const s = stats;
+  const row = document.getElementById('statsRow');
+  const items = [
+    {v: s.total, l: 'Total Chats'},
+    {v: s.converted, l: 'Paid Orders'},
+    {v: s.convRate + '%', l: 'Conv. Rate'},
+    {v: s.avgMsgsConv + ' msgs', l: 'Msgs to Close'},
+    {v: '$' + s.avgOrderVal, l: 'Avg Order Value'},
+  ];
+  row.innerHTML = items.map(i => `<div class="stat"><div class="stat-v">${i.v}</div><div class="stat-l">${i.l}</div></div>`).join('');
+}
+
+function renderTabs(qs) {
+  const bar = document.getElementById('tabBar');
+  const body = document.getElementById('panelBody');
+  bar.innerHTML = '';
+  body.innerHTML = '';
+
+  qs.forEach((q, i) => {
+    // Tab
+    const t = document.createElement('div');
+    t.className = `tab${i===0?' active':''}`;
+    t.id = `tab-${q.id}`;
+    t.textContent = q.label;
+    t.onclick = () => switchTab(q.id);
+    bar.appendChild(t);
+
+    // Content
+    const c = document.createElement('div');
+    c.id = `content-${q.id}`;
+    c.style.display = i===0 ? 'block' : 'none';
+
+    // Check if we have cached result
+    if (results[q.id]) {
+      c.innerHTML = `<div class="ai-text">${escHtml(results[q.id])}</div>`;
+      t.classList.add('done');
+    } else {
+      c.innerHTML = '<span class="waiting">Waiting...</span>';
+    }
+
+    body.appendChild(c);
+  });
+
+  activeTab = qs[0]?.id;
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-${id}`)?.classList.add('active');
+  document.querySelectorAll('#panelBody > div').forEach(c => c.style.display = 'none');
+  document.getElementById(`content-${id}`).style.display = 'block';
+  activeTab = id;
+}
+
+function setTabState(id, state) {
+  const t = document.getElementById(`tab-${id}`);
+  if (!t) return;
+  t.classList.remove('running', 'done');
+  if (state) t.classList.add(state);
+}
+
+function showCachedResults() {
+  show('secRes');
+  hide('secUpload');
+  renderStats();
+  const qs = QS.filter(q => results[q.id]);
+  renderTabs(qs);
+  document.getElementById('hdrExport').style.display = 'block';
+  document.getElementById('hdrReset').style.display = 'block';
+}
+
+// ── EXPORT ────────────────────────────────────────────
+function showExportModal() { document.getElementById('exportModal').classList.add('show'); }
+function hideExportModal() { document.getElementById('exportModal').classList.remove('show'); }
+
+function exportTXT() {
+  hideExportModal();
+  let txt = `FIVERR BUYER INTELLIGENCE REPORT\nGenerated by FatGraphs Intel Tool\n${'='.repeat(60)}\n\n`;
+  txt += `STATS\n${'-'.repeat(40)}\n`;
+  txt += `Total Chats: ${stats.total}\nConverted: ${stats.converted}\nConversion Rate: ${stats.convRate}%\nAvg Messages to Close: ${stats.avgMsgsConv}\nAvg Order Value: $${stats.avgOrderVal}\nTop Countries: ${stats.topCountries}\n\n`;
+  QS.forEach(q => {
+    if (results[q.id]) {
+      txt += `\n${'='.repeat(60)}\n${q.label.toUpperCase()}\n${'='.repeat(60)}\n\n${results[q.id]}\n`;
+    }
+  });
+  download('fiverr_intel_report.txt', txt, 'text/plain');
+}
+
+function exportCSV() {
+  hideExportModal();
+  const rows = [['Question', 'Analysis']];
+  QS.forEach(q => {
+    if (results[q.id]) rows.push([q.label, results[q.id].replace(/"/g, '""')]);
+  });
+  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  download('fiverr_intel_report.csv', csv, 'text/csv');
+}
+
+function exportJSON() {
+  hideExportModal();
+  const data = { stats, results, exported_at: new Date().toISOString() };
+  download('fiverr_intel_report.json', JSON.stringify(data, null, 2), 'application/json');
+}
+
+function download(name, content, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── UTILS ─────────────────────────────────────────────
+function show(id) { document.getElementById(id).classList.add('active'); }
+function hide(id) { document.getElementById(id).classList.remove('active'); }
+function prog(v) { document.getElementById('progBar').style.width = v + '%'; }
+function log(msg) {
+  const l = document.getElementById('progLog');
+  const p = document.createElement('p');
+  p.innerHTML = msg;
+  l.appendChild(p);
+  l.scrollTop = l.scrollHeight;
+}
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function resetAll() {
+  if (!confirm('Clear all saved results and start over?')) return;
+  results = {}; stats = {};
+  localStorage.removeItem('fi_results');
+  localStorage.removeItem('fi_stats');
+  files = []; chatData = []; orderData = [];
+  document.getElementById('fileSummary').style.display = 'none';
+  document.getElementById('qSection').style.display = 'none';
+  document.getElementById('runBtn').style.display = 'none';
+  document.getElementById('fi').value = '';
+  document.getElementById('progLog').innerHTML = '';
+  document.getElementById('progBar').style.width = '0';
+  document.getElementById('statsRow').innerHTML = '';
+  document.getElementById('tabBar').innerHTML = '';
+  document.getElementById('panelBody').innerHTML = '';
+  document.getElementById('cacheNotice').style.display = 'none';
+  document.getElementById('hdrExport').style.display = 'none';
+  document.getElementById('hdrReset').style.display = 'none';
+  // Remove view cached button if exists
+  document.querySelectorAll('.run-btn').forEach((b,i) => { if(i>0) b.remove(); });
+  show('secUpload');
+  hide('secRes');
+  hide('secProg');
+}
+</script>
+</body>
+</html>
