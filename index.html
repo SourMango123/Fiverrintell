@@ -319,7 +319,7 @@ function handleFiles(f) {
   const orders = files.filter(x => x.name.startsWith('fiverr_order_')).length;
   
   // Big obvious confirmation
-  const dz = document.getElementById('dropzone');
+  const dz = document.getElementById('dz');
   dz.style.borderColor = 'var(--accent)';
   dz.style.background = 'rgba(0,255,136,0.08)';
   dz.innerHTML = '<div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:var(--accent);margin-bottom:8px;">✅ ' + files.length + ' FILES LOADED</div><div style="font-family:DM Mono,monospace;font-size:13px;color:#888;">' + chats + ' chat files + ' + orders + ' order files</div>';
@@ -567,7 +567,7 @@ async function startAnalysis() {
     // Wait 30 seconds between questions to stay within rate limits
     if (i < selectedQs.length - 1) {
       log(`<span style="color:var(--dim)">Waiting 30s before next question...</span>`);
-      await new Promise(r => setTimeout(r, 30000));
+      await new Promise(r => setTimeout(r, 120000));
     }
   }
 
