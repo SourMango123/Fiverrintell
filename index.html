@@ -233,7 +233,7 @@ const QS = [
   {id:'growth', label:'📈 Gig lineup & product growth', prompt:'Based on what buyers ask for and what problems repeat — what new gigs should Haroon create? What is underserved in his current offering? What do buyers want that he does not currently sell? What packaging or bundling would convert more? What should his full gig lineup look like — entry level, mid tier, premium — to maximize revenue?'},
   {id:'pricing', label:'💰 Pricing: plans vs execution services', prompt:'Based on actual order values, budget discussions in conversations, and what buyers said they could spend — what should Haroon charge for: (1) strategy/plan-only services, (2) execution services like paid ads management, cold email setup, LinkedIn outbound, (3) retainer work? What price points make buyers hesitate vs feel comfortable? What is the pricing psychology of this buyer? Give specific recommended price points with reasoning from the data.'},
   {id:'channels', label:'📡 Where to find & target them', prompt:'Based on buyer profiles and what they shared about themselves — where do these buyers spend time online? What channels can Haroon use to find and reach them proactively? What are their browsing and searching patterns before they come to Fiverr? If Haroon wanted to find 10 of these buyers this week, exactly where would he look and what would he do?'},
-  {id:'content', label:'✍️ Blog, SEO & content strategy', prompt:'Based on the exact language, questions, and problems buyers bring to conversations — what should Haroon's content strategy look like? What are they Googling before they find him? Give 15+ specific blog post titles with target keywords matching their actual search intent. What topics would make a buyer think this person gets exactly what I am going through? What content would bring inbound leads who are pre-sold?'},
+  {id:'content', label:'✍️ Blog, SEO & content strategy', prompt:'Based on the exact language, questions, and problems buyers bring to conversations — what should Haroon\'s content strategy look like? What are they Googling before they find him? Give 15+ specific blog post titles with target keywords matching their actual search intent. What topics would make a buyer think this person gets exactly what I am going through? What content would bring inbound leads who are pre-sold?'},
   {id:'reels', label:'📱 Reels & social content topics', prompt:'Create 20+ specific Reel or short video content ideas targeting these exact buyers. For each: the exact hook line for the first 3 seconds, the content angle, and specific words or phrases from actual buyer conversations that would stop the scroll. What emotional triggers work for this audience? What should Haroon never say in a reel targeting these buyers?'},
   {id:'outreach', label:'📧 Cold email & LinkedIn outreach', prompt:'Based on the firmographics of buyers in this dataset — give the exact LinkedIn Sales Navigator filters: job titles, company size, industry, keywords, geography, seniority, recent activity signals. Then write a 3-email cold outreach sequence targeting the converted buyer profile. Use actual language patterns and pain points from the conversations. What subject lines would get this audience to open? What opening line would make them feel immediately understood?'},
 ];
@@ -319,7 +319,7 @@ function handleFiles(f) {
   const orders = files.filter(x => x.name.startsWith('fiverr_order_')).length;
   
   // Big obvious confirmation
-  const dz = document.getElementById('dz');
+  const dz = document.getElementById('dropzone');
   dz.style.borderColor = 'var(--accent)';
   dz.style.background = 'rgba(0,255,136,0.08)';
   dz.innerHTML = '<div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:var(--accent);margin-bottom:8px;">✅ ' + files.length + ' FILES LOADED</div><div style="font-family:DM Mono,monospace;font-size:13px;color:#888;">' + chats + ' chat files + ' + orders + ' order files</div>';
@@ -567,7 +567,7 @@ async function startAnalysis() {
     // Wait 30 seconds between questions to stay within rate limits
     if (i < selectedQs.length - 1) {
       log(`<span style="color:var(--dim)">Waiting 30s before next question...</span>`);
-      await new Promise(r => setTimeout(r, 120000));
+      await new Promise(r => setTimeout(r, 30000));
     }
   }
 
@@ -587,7 +587,7 @@ ${context}
 
 IMPORTANT CONTEXT:
 - The converted buyers (those who paid) are your gold standard for analysis
-- Haroon's services: GTM strategy, paid ads (Meta/Google/LinkedIn), cold email, LinkedIn outbound, demand generation, SEO, web dev, automations, UI/UX
+- Haroon\'s services: GTM strategy, paid ads (Meta/Google/LinkedIn), cold email, LinkedIn outbound, demand generation, SEO, web dev, automations, UI/UX
 - Haroon does NOT do: TikTok organic, Reddit, Discord, community management, influencer campaigns
 - His typical client: early to mid-stage B2B SaaS founders
 - Base in Islamabad, Pakistan — serves US/UK/EU clients
